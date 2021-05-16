@@ -52,6 +52,39 @@ app.post('/register', (req, res) => {
     res.json(database.users[database.users.length-1]);
 });
 
+app.get('/profile/:id', (req, res) => {
+    const { id } = req.params;
+    let isFound = false;
+    
+    database.users.forEach( user => {
+        if (user.id.toString() === id) {
+            isFound = true;
+            return res.json(user);
+        }
+    });
+
+    if (!isFound) {
+        res.status(400).json('not found');
+    }
+});
+
+app.put('/image', (req, res) => {
+    const { id } = req.body;
+    let isFound = false;
+    
+    database.users.forEach( user => {
+        if (user.id.toString() === id) {
+            isFound = true;
+            user.entries++;
+            return res.json(user.entries);
+        }
+    });
+
+    if (!isFound) {
+        res.status(400).json('not found');
+    }
+});
+
 app.listen(3020, () => {
     console.log('app running on port 3020');
 });
