@@ -8,7 +8,7 @@ app.use(cors());
 
 const database = {
     users: [{
-        id: 123,
+        id: "123",
         name: "John",
         email: "john@email.com",
         password: "cookies",
@@ -16,7 +16,7 @@ const database = {
         joined: new Date()
     },
     {
-        id: 124,
+        id: "124",
         name: "Mary",
         email: "Mary@email.com",
         password: "notecookies",
@@ -44,7 +44,7 @@ app.post('/register', (req, res) => {
     const { email, password, name } = req.body;
 
     database.users.push({
-        id: 125,
+        id: "125",
         name: name,
         email: email,
         password: password,
@@ -59,7 +59,7 @@ app.get('/profile/:id', (req, res) => {
     let isFound = false;
     
     database.users.forEach( user => {
-        if (user.id.toString() === id) {
+        if (user.id === id) {
             isFound = true;
             return res.json(user);
         }
