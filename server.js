@@ -3,6 +3,11 @@ const cors = require('cors');
 const knex = require('knex');
 const bcrypt = require('bcrypt-nodejs');
 
+const register = require('./controllers/register');
+const signIn = require('./controllers/signin');
+const profile = require('./controllers/profile')
+const image = require('./controllers/image');
+
 const db = knex({
     client: 'pg',
     connection: {
@@ -23,79 +28,13 @@ app.get('/', (req, res)=>{
     res.send('success');
 })
 
-app.post('/signin', (req, res) => {
-    const {email, password} = req.body;
-    
-    db('login')
-        .where({email})
-        .then(data => {
-            if (bcrypt.compareSync(password, data[0].hash)) {
-                db('users')
-                    .where({email})
-                    .then(user => res.json(user[0]))
-                    .catch(err => res.status(400).json('Error getting the users'))
-            }
-            else{
-                res.status(400).json('wrong credentials');
-            }
-        })
-        .catch(err => res.status(400).json('Wrong Credentials'));
-});
- 
-app.post('/register', (req, res) => {
-    const { email, password, name } = req.body;
-    let hash = bcrypt.hashSync(password);
-    
-    db.transaction( trx => {
-        trx.insert({
-            hash: hash,
-            email: email
-        })
-        .into('login')
-        .returning('email')
-        .then(loginEmail => {
-            trx('users')
-            .returning('*')
-            .insert({
-                email: loginEmail[0],
-                name: name,
-                joined: new Date()
-            })
-            .then( user => res.json(user[0]))
-        })
-        .then(trx.commit)
-        .catch(trx.rollback);
-    })
-    .catch(err => res.status(400).json('unable to register'));
-        
-});
+app.post('/signin', signIn.signInHandler(db, bcrypt));
 
-app.get('/profile/:id', (req, res) => {
-    const { id } = req.params;
-    
-    db('users')
-        .where({id})                                        // table column and variable are the same then we can do that sintax
-        .then(user => {
-            if(user.length)
-                res.json(user[0])
-            else 
-                res.status(400).json('not found')
-        })
-        .catch(err => res.status(400).json('error getting user'));
+app.post('/register', register.RegisterHandler(db, bcrypt));
 
-});
+app.get('/profile/:id', profile.profileHandler(db));
 
-app.put('/image', (req, res) => {
-    const { id } = req.body;
-    
-    db('users')
-        .where({id})
-        .increment('entries', 1)
-        .returning('entries')
-        .then(entry => res.json(entry[0]))
-        .catch(err => res.status(400).json('unable to get entries'));
-
-});
+app.put('/image', image.imageHandler(db));
 
 app.listen(3020, () => {
     console.log('app running on port 3020');
