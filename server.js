@@ -36,6 +36,8 @@ app.get('/profile/:id', profile.profileHandler(db));
 
 app.put('/image', image.imageHandler(db));
 
+app.post('/imageURL', image.handleApiCall());
+
 app.listen(3020, () => {
     console.log('app running on port 3020');
 });
